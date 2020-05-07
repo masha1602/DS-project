@@ -208,23 +208,6 @@ places = places %>% select(-title)
 
 ```
 
-```{r echo=TRUE}
-
-#сайтс и лэндмаркс 1
-
-#Museums & Libraries 2
-
-#концерты и шоу 3
-
-#Nature & Parks 4
-
-```
-
-```{r include=FALSE}
-
-places = places %>% na.omit()
-
-```
 
 ```{r include=FALSE}
 
