@@ -1,0 +1,344 @@
+---
+title: "project"
+output: html_document
+---
+
+
+1. Загружаем данные и убираем NA
+
+```{r include=FALSE}
+library (rjson)
+library(jsonlite)
+library(tibble)
+
+yelp <- fromJSON("~/3rd course/2 term/project/Saint-Petersburg_1.json")
+str(yelp)
+yelp_flat <- flatten(yelp)
+yelp_tbl <- as_data_frame(yelp_flat)
+df <- yelp_flat[!is.na(yelp_flat$tripAdvisor_link),]
+
+```
+
+
+2. Приводим в нужный вид переменную с временем работы достопримечательностей
+
+```{r include=FALSE}
+
+library(tidyr)
+df$open_hours.0[df$open_hours.0 == 'NULL'] <- list(c(0,0))
+df$open_hours.1[df$open_hours.1 == 'NULL'] <- list(c(0,0))
+df$open_hours.2[df$open_hours.2 == 'NULL'] <- list(c(0,0))
+df$open_hours.3[df$open_hours.3 == 'NULL'] <- list(c(0,0))
+df$open_hours.4[df$open_hours.4 == 'NULL'] <- list(c(0,0))
+df$open_hours.5[df$open_hours.5 == 'NULL'] <- list(c(0,0))
+df$open_hours.6[df$open_hours.6 == 'NULL'] <- list(c(0,0))
+unnest_time= function(var, name1, name2) { df= df%>%
+  dplyr::mutate(var = purrr::map(var, setNames, c("name1","name2"))) %>%
+  unnest_wider(var)
+}
+df = df%>%
+  dplyr::mutate(open_hours.0 = purrr::map(open_hours.0, setNames, c("open0","close0"))) %>%
+  unnest_wider(open_hours.0)
+
+df = df%>%
+  dplyr::mutate(open_hours.1 = purrr::map(open_hours.1, setNames, c("open1","close1"))) %>%
+  unnest_wider(open_hours.1)
+
+df = df%>%
+  dplyr::mutate(open_hours.2 = purrr::map(open_hours.2, setNames, c("open2","close2"))) %>%
+  unnest_wider(open_hours.2)
+
+df = df%>%
+  dplyr::mutate(open_hours.3 = purrr::map(open_hours.3, setNames, c("open3","close3"))) %>%
+  unnest_wider(open_hours.3)
+
+df = df%>%
+  dplyr::mutate(open_hours.4 = purrr::map(open_hours.4, setNames, c("open4","close4"))) %>%
+  unnest_wider(open_hours.4)
+
+df = df%>%
+  dplyr::mutate(open_hours.5 = purrr::map(open_hours.5, setNames, c("open5","close5"))) %>%
+  unnest_wider(open_hours.5) 
+
+df = df%>%
+  dplyr::mutate(open_hours.6 = purrr::map(open_hours.6, setNames, c("open6","close6"))) %>%
+  unnest_wider(open_hours.6)
+
+df$open0= as.integer(df$open0/100)
+df$open1= as.integer(df$open1/100)
+df$open2= as.integer(df$open2/100)
+df$open3= as.integer(df$open3/100)
+df$open4= as.integer(df$open4/100)
+df$open5= as.integer(df$open5/100)
+df$open6= as.integer(df$open6/100)
+df$close0=as.integer(df$close0/100)
+df$close1=as.integer(df$close1/100)
+df$close2=as.integer(df$close2/100)
+df$close3=as.integer(df$close3/100)
+df$close4=as.integer(df$close4/100)
+df$close5=as.integer(df$close5/100)
+df$close6=as.integer(df$close6/100)
+```
+
+
+
+
+3.Сколько объектов в каждой  категории в первоначальном датасете?
+
+```{r include=FALSE}
+library (dplyr)
+yelp_flat_category1 = yelp_flat %>% filter(category== "Sights & Landmarks") #3683
+
+yelp_flat_category2 = yelp_flat %>% filter(category== "Museums & Libraries")#386
+
+yelp_flat_category3 = yelp_flat %>% filter(category == "Concerts & Shows")#133
+
+yelp_flat_category4 = yelp_flat %>% filter(category== "Nature & Parks")#524
+```
+
+Сколько объектов в каждой категории в почищенном датасете?
+```{r include=FALSE}
+library (dplyr)
+df_category1 = df %>% filter(category== "Sights & Landmarks") #741
+
+df_category2 = df %>% filter(category== "Museums & Libraries")#320
+
+df_category3 = df %>% filter(category== "Concerts & Shows")#89
+
+df_category4 = df %>% filter(category== "Nature & Parks")#69
+```
+
+Поскольку число мест в каждой категории сильно отличается, могут возникнуть поблемы с рекомендацией, особенно по 2,3,4 категориям.
+Какие варианты решения можно было бы предложить?
+
+1)Feature Ingineering. Результат: разбиение на категории не уравнялось (попытка воспроизведена ниже)
+2)Из первоначального (неочищенного от NA по перменной tripAdvisor link) датасета добрать другие достопримечательности, у которых нет рейтинга по trip Advisor, но зато есть рейтинг по foursquare, специально под те категории, в котрых меньше всего  мест (2,3,4)
+
+1)Feature Ingineering. 
+```{r include=FALSE}
+#Feature Ingineering 
+df2 = df[df$close0 == "24",]
+df$noctidial = ifelse(df$title %in% df2$title, "TRUE", "FALSE")
+df$id= rownames(df)
+```
+
+
+```{r include=FALSE}
+df$category[df$category == 'c("Museums & Libraries", "Nature & Parks")'] <- "Museums & Libraries"
+df$category[df$category == 'c("Sights & Landmarks", "Nature & Parks")'] <- "Sights & Landmarks"
+df$category[df$category == 'c("Sights & Landmarks", "Museums & Libraries")'] <- "Museums & Libraries"
+df$category[df$category == 'c("Museums & Libraries", "Concerts & Shows")'] <- "Museums & Libraries"
+df$category[df$category == 'c("Sights & Landmarks", "Concerts & Shows")'] <- "Concerts & Shows"
+df$category[df$category == 'c("Sights & Landmarks", "Museums & Libraries", "Nature & Parks")'] <- "Museums & Libraries"
+unique(df$category)
+
+df$free[df$category=='Sights & Landmarks']<-1
+df$free[df$category=='Museums & Libraries']<-0
+df$free[df$category=='Nature & Parks']<-1
+df$free[df$category=='Concerts & Shows']<-0
+table(df$free)
+
+
+
+
+```
+
+```{r include=FALSE}
+df1 = df %>% filter(category== "Sights & Landmarks") #772
+
+df2 = df %>% filter(category== "Museums & Libraries")#346
+
+df3 = df %>% filter(category== "Concerts & Shows")#92
+
+df4 = df %>% filter(category== "Nature & Parks")#69
+
+
+```
+
+Результат : количество мест в 2,3,4 категориях почти не изменилось.
+
+
+
+2) Уравновешиваем категории - из первоначального датасета возьмем только те места, у которых есть foursquare rating, и которые относятся к 2,3, 4 категориям и добавим их к нашему очищенному датасету df.
+
+Стоит ли пробовать так делать или есть иное решение?
+
+```{r}
+
+
+```
+
+
+
+4.Кластеризация 
+
+
+```{r include=FALSE}
+
+library(dplyr)
+
+library(ggplot2)
+
+library(readr)
+
+library(readxl)
+
+places = df %>% select (category, duration, officialGuide, tripAdvisor_rating, tripAdvisor_reviewsNumber, title)
+
+places$id= rownames(places)
+
+places$category[places$category == "Sights & Landmarks"] <- 1
+
+places$category[places$category == "Museums & Libraries"] <- 2
+
+places$category[places$category == "Concerts & Shows"] <- 3
+
+places$category[places$category == "Nature & Parks"] <- 4
+```
+
+```{r include=FALSE}
+
+id = places %>% select(id, title)
+
+```
+
+```{r include=FALSE}
+
+places = places %>% select(-title)
+
+```
+
+```{r echo=TRUE}
+
+#сайтс и лэндмаркс 1
+
+#Museums & Libraries 2
+
+#концерты и шоу 3
+
+#Nature & Parks 4
+
+```
+
+```{r include=FALSE}
+
+places = places %>% na.omit()
+
+```
+
+```{r include=FALSE}
+
+scaled_places = as.matrix(scale(places))
+
+```
+
+```{r echo=TRUE}
+
+#Elbow Method for finding the optimal number of clusters
+
+set.seed(123)
+
+#Compute and plot wss for k = 2 to k = 15.
+
+k.max <- 15
+
+data <- scaled_places
+
+wss <- sapply(1:k.max,
+
+function(k){kmeans(data, k, nstart=50,iter.max = 15 )$tot.withinss})
+
+wss
+
+plot(1:k.max, wss,
+
+type="b", pch = 19, frame = FALSE,
+
+xlab="Number of clusters K",
+
+ylab="Total within-clusters sum of squares")
+
+```
+
+12
+
+```{r include=FALSE}
+
+library(stats)
+
+library(ggplot2)
+
+library(GGally)
+
+km.out=kmeans(places,12,nstart=20)
+
+km.out$cluster
+
+km.out$size
+
+table(km.out$cluster)
+
+sum(km.out$cluster==1)
+
+places$clusters = factor(km.out$cluster)
+
+```
+
+```{r include=FALSE}
+
+id = left_join(id, places)
+
+title = id %>% select(title, clusters) %>% na.omit()
+
+class(title$clusters)
+
+cluster1 = title %>% filter(clusters==1)
+
+```
+
+
+
+5. Загружаем таблицу с метро (название станции, координаты, адрес)
+
+```{r include=FALSE}
+
+library(readr)
+
+library(readxl)
+
+subway <- read_excel("~/3rd course/2 term/project/Subway.xlsx")
+```
+
+У станции метро есть координату x, y.
+У достопримечательностей в датасете df тоже есть координаты (lat, lng)
+
+Как можно посчитать расстояние между ними?
+
+
+
+6.Решение проблемы холодного старта: связано с решением проблемы рассчета расстояния между координатами места и метро
+
+Пользователь отмечает, что ему не важно , какую категории достопримечатлеьности посещать, в какое вермя  т.п.
+
+В таком случае ему необходимо ответить в обязательном порядке на 2 вопроса:
+
+1. В какой день недели хотели бы посетить достопримечательность? (жесткий фильтр)
+•	ПН
+•	ВТ
+•	СР
+•	ЧТ
+•	ПТ
+•	СБ
+
+2.Важно ли близкое расположение достопримечательности ? (жесткий фильтр)
+•	Да
+•	Нет
+
+Результат: 
+А) Если пользователю важно близкое расположение достопримечательности, то  рекомендуем  рандомные места  рядом с метро, маст визит места рядом с метро
+Б) Если пользователю неважно близкое расположение достопримечательности, то  рекомендуем  просто рандомные места, просто рандомные маст визит места 
+
+
+
+
+
