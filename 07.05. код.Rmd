@@ -82,38 +82,6 @@ df$close6=as.integer(df$close6/100)
 
 
 
-
-3.Сколько объектов в каждой  категории в первоначальном датасете?
-
-```{r include=FALSE}
-library (dplyr)
-yelp_flat_category1 = yelp_flat %>% filter(category== "Sights & Landmarks") #3683
-
-yelp_flat_category2 = yelp_flat %>% filter(category== "Museums & Libraries")#386
-
-yelp_flat_category3 = yelp_flat %>% filter(category == "Concerts & Shows")#133
-
-yelp_flat_category4 = yelp_flat %>% filter(category== "Nature & Parks")#524
-```
-
-Сколько объектов в каждой категории в почищенном датасете?
-```{r include=FALSE}
-library (dplyr)
-df_category1 = df %>% filter(category== "Sights & Landmarks") #741
-
-df_category2 = df %>% filter(category== "Museums & Libraries")#320
-
-df_category3 = df %>% filter(category== "Concerts & Shows")#89
-
-df_category4 = df %>% filter(category== "Nature & Parks")#69
-```
-
-Поскольку число мест в каждой категории сильно отличается, могут возникнуть поблемы с рекомендацией, особенно по 2,3,4 категориям.
-Какие варианты решения можно было бы предложить?
-
-1)Feature Ingineering. Результат: разбиение на категории не уравнялось (попытка воспроизведена ниже)
-2)Из первоначального (неочищенного от NA по перменной tripAdvisor link) датасета добрать другие достопримечательности, у которых нет рейтинга по trip Advisor, но зато есть рейтинг по foursquare, специально под те категории, в котрых меньше всего  мест (2,3,4)
-
 1)Feature Ingineering. 
 ```{r include=FALSE}
 #Feature Ingineering 
@@ -151,19 +119,6 @@ df2 = df %>% filter(category== "Museums & Libraries")#346
 df3 = df %>% filter(category== "Concerts & Shows")#92
 
 df4 = df %>% filter(category== "Nature & Parks")#69
-
-
-```
-
-Результат : количество мест в 2,3,4 категориях почти не изменилось.
-
-
-
-2) Уравновешиваем категории - из первоначального датасета возьмем только те места, у которых есть foursquare rating, и которые относятся к 2,3, 4 категориям и добавим их к нашему очищенному датасету df.
-
-Стоит ли пробовать так делать или есть иное решение?
-
-```{r}
 
 
 ```
@@ -291,12 +246,6 @@ library(readxl)
 
 subway <- read_excel("~/3rd course/2 term/project/Subway.xlsx")
 ```
-
-У станции метро есть координату x, y.
-У достопримечательностей в датасете df тоже есть координаты (lat, lng)
-
-Как можно посчитать расстояние между ними?
-
 
 
 6.Решение проблемы холодного старта: связано с решением проблемы рассчета расстояния между координатами места и метро
