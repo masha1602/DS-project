@@ -3,7 +3,6 @@ title: "project"
 output: html_document
 ---
 
-
 1. Downloading data
 
 ```{r include=FALSE}
@@ -18,7 +17,6 @@ yelp_tbl <- as_data_frame(yelp_flat)
 df <- yelp_flat[!is.na(yelp_flat$tripAdvisor_link),]
 
 ```
-
 
 2. Working hours
 
@@ -81,7 +79,6 @@ df$close6=as.integer(df$close6/100)
 ```
 
 
-
 3. Feature Ingineering. 
 
 ```{r include=FALSE}
@@ -90,7 +87,6 @@ df2 = df[df$close0 == "24",]
 df$noctidial = ifelse(df$title %in% df2$title, "TRUE", "FALSE")
 df$id= rownames(df)
 ```
-
 
 ```{r include=FALSE}
 df$category[df$category == 'c("Museums & Libraries", "Nature & Parks")'] <- "Museums & Libraries"
@@ -106,10 +102,6 @@ df$free[df$category=='Museums & Libraries']<-0
 df$free[df$category=='Nature & Parks']<-1
 df$free[df$category=='Concerts & Shows']<-0
 table(df$free)
-
-
-
-
 ```
 
 4.Clustering 
@@ -252,7 +244,3 @@ random
 cat("Place name: ", random$title, "Adress: ", random$address, "Category: ", random$category , sep= '\n')
 
 ```
-
-
-
-
