@@ -20,7 +20,7 @@ df <- yelp_flat[!is.na(yelp_flat$tripAdvisor_link),]
 ```
 
 
-2. Working with working hours
+2. Working hours
 
 ```{r include=FALSE}
 
@@ -126,16 +126,10 @@ library(readr)
 library(readxl)
 
 places = df %>% select (category, duration, officialGuide, tripAdvisor_rating, tripAdvisor_reviewsNumber, title)
-
 places$id= rownames(places)
+places$temp_val= 1
+places= places %>% spread(key='category', value= 'temp_val', fill=0)
 
-places$category[places$category == "Sights & Landmarks"] <- 1
-
-places$category[places$category == "Museums & Libraries"] <- 2
-
-places$category[places$category == "Concerts & Shows"] <- 3
-
-places$category[places$category == "Nature & Parks"] <- 4
 ```
 
 ```{r include=FALSE}
@@ -182,10 +176,10 @@ type="b", pch = 19, frame = FALSE,
 xlab="Number of clusters K",
 
 ylab="Total within-clusters sum of squares")
+#Optimal num of clusters- 12
 
 ```
 
-12
 
 ```{r include=FALSE}
 
@@ -247,10 +241,17 @@ leaflet(df) %>%
   addMarkers(lng=30.3148, lat=	59.9361, popup="Адмиралтейская") %>%
   addPolylines(
     lng = ~df$c.30.3061295..30.3148.,
-    lat = ~df$c.59.9341393..59.9361.)
+    lat = ~df$c.59.9341393..59.9361.) #Adding route 
 ```
 
+7. Randon place generator
 
+```{r}
+random= sample_n(df,1)
+random
+cat("Place name: ", random$title, "Adress: ", random$address, "Category: ", random$category , sep= '\n')
+
+```
 
 
 
