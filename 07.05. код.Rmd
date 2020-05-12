@@ -4,7 +4,7 @@ output: html_document
 ---
 
 
-1. Загружаем данные и убираем NA
+1. Downloading data
 
 ```{r include=FALSE}
 library (rjson)
@@ -20,7 +20,7 @@ df <- yelp_flat[!is.na(yelp_flat$tripAdvisor_link),]
 ```
 
 
-2. Приводим в нужный вид переменную с временем работы достопримечательностей
+2. Working with working hours
 
 ```{r include=FALSE}
 
@@ -82,7 +82,8 @@ df$close6=as.integer(df$close6/100)
 
 
 
-1)Feature Ingineering. 
+3. Feature Ingineering. 
+
 ```{r include=FALSE}
 #Feature Ingineering 
 df2 = df[df$close0 == "24",]
@@ -111,21 +112,7 @@ table(df$free)
 
 ```
 
-```{r include=FALSE}
-df1 = df %>% filter(category== "Sights & Landmarks") #772
-
-df2 = df %>% filter(category== "Museums & Libraries")#346
-
-df3 = df %>% filter(category== "Concerts & Shows")#92
-
-df4 = df %>% filter(category== "Nature & Parks")#69
-
-
-```
-
-
-
-4.Кластеризация 
+4.Clustering 
 
 
 ```{r include=FALSE}
@@ -235,8 +222,7 @@ cluster1 = title %>% filter(clusters==1)
 ```
 
 
-
-5. Загружаем таблицу с метро (название станции, координаты, адрес)
+5. Downloading subway data
 
 ```{r include=FALSE}
 
@@ -247,28 +233,23 @@ library(readxl)
 subway <- read_excel("~/3rd course/2 term/project/Subway.xlsx")
 ```
 
+6. Maps plotting using leaflet plugin in OpenStreetMap
 
-6.Решение проблемы холодного старта: связано с решением проблемы рассчета расстояния между координатами места и метро
+```{r}
+library(leaflet)
+lng= list(c(30.3061295, 30.3148))
+lat= list(c(59.9341393, 59.9361))
+df <- data.frame(lng=lng, lat=lat)
 
-Пользователь отмечает, что ему не важно , какую категории достопримечатлеьности посещать, в какое вермя  т.п.
+leaflet(df) %>%
+  addTiles()  %>% 
+  addMarkers(lng=30.3061295, lat=59.9341393, popup="Исакиевский собор") %>%
+  addMarkers(lng=30.3148, lat=	59.9361, popup="Адмиралтейская") %>%
+  addPolylines(
+    lng = ~df$c.30.3061295..30.3148.,
+    lat = ~df$c.59.9341393..59.9361.)
+```
 
-В таком случае ему необходимо ответить в обязательном порядке на 2 вопроса:
-
-1. В какой день недели хотели бы посетить достопримечательность? (жесткий фильтр)
-•	ПН
-•	ВТ
-•	СР
-•	ЧТ
-•	ПТ
-•	СБ
-
-2.Важно ли близкое расположение достопримечательности ? (жесткий фильтр)
-•	Да
-•	Нет
-
-Результат: 
-А) Если пользователю важно близкое расположение достопримечательности, то  рекомендуем  рандомные места  рядом с метро, маст визит места рядом с метро
-Б) Если пользователю неважно близкое расположение достопримечательности, то  рекомендуем  просто рандомные места, просто рандомные маст визит места 
 
 
 
