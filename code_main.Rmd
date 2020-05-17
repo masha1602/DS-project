@@ -231,6 +231,77 @@ cluster1 = title %>% filter(clusters==1)
 
 ```
 
+5.1. Another clustering (with free and duration)
+
+```{r include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(readxl)
+places = df %>% select (free, duration, category, title)
+places$id= rownames(places)
+places$temp_val= 1
+places= places %>% spread(key='category', value= 'temp_val', fill=0)
+```
+
+```{r include=FALSE}
+id = places %>% select(id, title)
+id$id = as.numeric(id$id)
+```
+
+```{r include=FALSE}
+places = places %>% select(-title)
+```
+
+
+```{r include=FALSE}
+places$id = as.numeric(places$id)
+scaled_places = as.matrix(scale(places))
+```
+
+
+```{r echo=TRUE}
+#Elbow Method for finding the optimal number of clusters
+set.seed(123)
+#Compute and plot wss for k = 2 to k = 15.
+k.max <- 15
+data <- scaled_places
+wss <- sapply(1:k.max,
+function(k){kmeans(data, k, nstart=50,iter.max = 15 )$tot.withinss})
+wss
+plot(1:k.max, wss,
+type="b", pch = 19, frame = FALSE,
+xlab="Number of clusters K",
+ylab="Total within-clusters sum of squares")
+#Optimal num of clusters- 12
+```
+
+```{r include=FALSE}
+library(stats)
+library(ggplot2)
+library(GGally)
+km.out=kmeans(places, 5,nstart=20)
+km.out$cluster
+km.out$size
+table(km.out$cluster)
+sum(km.out$cluster==1)
+places$clusters = factor(km.out$cluster)
+
+```
+
+```{r include=FALSE}
+id = left_join(id, places)
+title = id %>% select(title, clusters) %>% na.omit()
+class(title$clusters)
+cluster1 = title %>% filter(clusters==1)
+cluster2 = title %>% filter(clusters==2)
+cluster3 = title %>% filter(clusters==3)
+cluster4 = title %>% filter(clusters==4)
+cluster5 = title %>% filter(clusters==5)
+```
+
+
+
 
 6. Downloading subway data
 
