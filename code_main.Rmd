@@ -138,9 +138,11 @@ library(readr)
 library(readxl)
 
 df$officialGuide<- as.numeric(df$officialGuide)
+df$duration<- as.numeric(df$duration)
 
 places = df %>% select (category, duration, officialGuide, tripAdvisor_rating, must_visit, title)
 places$id= rownames(places)
+places$id<- as.numeric(places$id)
 places$temp_val= 1
 places= places %>% spread(key='category', value= 'temp_val', fill=0)
 
