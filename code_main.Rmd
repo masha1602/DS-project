@@ -137,6 +137,8 @@ library(readr)
 
 library(readxl)
 
+df$officialGuide<- as.numeric(df$officialGuide)
+
 places = df %>% select (category, duration, officialGuide, tripAdvisor_rating, must_visit, title)
 places$id= rownames(places)
 places$temp_val= 1
