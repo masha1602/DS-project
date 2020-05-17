@@ -104,7 +104,27 @@ df$free[df$category=='Concerts & Shows']<-0
 table(df$free)
 ```
 
-4.Clustering 
+4. Creating must visit places
+
+```{r include=FALSE}
+library (dplyr)
+
+df= dplyr:: mutate(df, must_visit= df$tripAdvisor_reviewsNumber)
+
+df= df %>% select (-tripAdvisor_reviewsNumber)
+
+summary(df$must_visit)
+
+approval_condition = (df$must_visit >=500)
+
+df$must_visit = ifelse(approval_condition, "1", "0")
+
+df$must_visit <- as.numeric(df$must_visit)
+
+```
+
+
+5.Clustering 
 
 
 ```{r include=FALSE}
@@ -208,7 +228,7 @@ cluster1 = title %>% filter(clusters==1)
 ```
 
 
-5. Downloading subway data
+6. Downloading subway data
 
 ```{r include=FALSE}
 
@@ -219,7 +239,7 @@ library(readxl)
 subway <- read_excel("~/3rd course/2 term/project/Subway.xlsx")
 ```
 
-6. Maps plotting using leaflet plugin in OpenStreetMap
+7. Maps plotting using leaflet plugin in OpenStreetMap
 
 ```{r}
 library(leaflet)
@@ -236,7 +256,7 @@ leaflet(df) %>%
     lat = ~df$c.59.9341393..59.9361.) #Adding route 
 ```
 
-7. Randon place generator
+8. Randon place generator
 
 ```{r}
 random= sample_n(df,1)
