@@ -16,6 +16,10 @@ yelp_flat <- flatten(yelp)
 yelp_tbl <- as_data_frame(yelp_flat)
 df <- yelp_flat[!is.na(yelp_flat$tripAdvisor_link),]
 
+
+drops <- c("foursquare_checkinsCount","foursquare_ratingVotes", "foursquare_userCount","open_hours.7","instagram_visitorsNumber", "tripAdvisor_link", "foursquare_rating")
+df= df[ , !(names(df) %in% drops)]
+
 ```
 
 2. Working hours
