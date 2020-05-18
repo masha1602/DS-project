@@ -130,181 +130,40 @@ df$must_visit <- as.numeric(df$must_visit)
 
 5.Clustering 
 
-
-```{r include=FALSE}
-
-library(dplyr)
-
-library(ggplot2)
-
-library(readr)
-
-library(readxl)
-
-df$officialGuide<- as.numeric(df$officialGuide)
-df$duration<- as.numeric(df$duration)
-
-places = df %>% select (category, duration, officialGuide, tripAdvisor_rating, must_visit, title)
+```{r}
+library(cluster.datasets)
+places = df %>% select (free, duration, title)
 places$id= rownames(places)
-places$id<- as.numeric(places$id)
-places$temp_val= 1
-places= places %>% spread(key='category', value= 'temp_val', fill=0)
+places$duration = as.numeric(places$duration)
 
-```
+places$duration_15 = ifelse(places$duration == 15, "1", "0") %>% as.numeric()
+places$duration_60 = ifelse(places$duration == 60, "1", "0") %>% as.numeric()
+places$duration_120 = ifelse(places$duration == 120, "1", "0") %>% as.numeric()
+places = places %>% select(-duration)
 
-```{r include=FALSE}
-
-id = places %>% select(id, title)
-
-```
-
-```{r include=FALSE}
-
-places = places %>% select(-title)
-
-```
-
-
-```{r include=FALSE}
-
-scaled_places = as.matrix(scale(places))
-
-```
-
-```{r echo=TRUE}
-
-#Elbow Method for finding the optimal number of clusters
-
-set.seed(123)
-
-#Compute and plot wss for k = 2 to k = 15.
-
-k.max <- 15
-
-data <- scaled_places
-
-wss <- sapply(1:k.max,
-
-function(k){kmeans(data, k, nstart=50,iter.max = 15 )$tot.withinss})
-
-wss
-
-plot(1:k.max, wss,
-
-type="b", pch = 19, frame = FALSE,
-
-xlab="Number of clusters K",
-
-ylab="Total within-clusters sum of squares")
-#Optimal num of clusters- 12
-
-```
-
-
-```{r include=FALSE}
-
-library(stats)
-
-library(ggplot2)
-
-library(GGally)
-
-km.out=kmeans(places,12,nstart=20)
-
-km.out$cluster
-
-km.out$size
-
-table(km.out$cluster)
-
-sum(km.out$cluster==1)
-
-places$clusters = factor(km.out$cluster)
-
-```
-
-```{r include=FALSE}
-
-id = left_join(id, places)
-
-title = id %>% select(title, clusters) %>% na.omit()
-
-class(title$clusters)
-
-cluster1 = title %>% filter(clusters==1)
-
-```
-
-5.1. Another clustering (with free and duration)
-
-```{r include=FALSE}
-library(dplyr)
-library(ggplot2)
-library(readr)
-library(readxl)
-places = df %>% select (free, duration, category, title)
-places$id= rownames(places)
-places$temp_val= 1
-places= places %>% spread(key='category', value= 'temp_val', fill=0)
-```
-
-```{r include=FALSE}
 id = places %>% select(id, title)
 id$id = as.numeric(id$id)
-```
-
-```{r include=FALSE}
 places = places %>% select(-title)
-```
-
-
-```{r include=FALSE}
 places$id = as.numeric(places$id)
 scaled_places = as.matrix(scale(places))
-```
 
+place.average = hclust(dist(scaled_places), method="average")
+#plot(place.average, main="Average Linkage", xlab="", sub="", cex=.9)
+hclusters = cutree(place.average, k = 4)
 
-```{r echo=TRUE}
-#Elbow Method for finding the optimal number of clusters
-set.seed(123)
-#Compute and plot wss for k = 2 to k = 15.
-k.max <- 15
-data <- scaled_places
-wss <- sapply(1:k.max,
-function(k){kmeans(data, k, nstart=50,iter.max = 15 )$tot.withinss})
-wss
-plot(1:k.max, wss,
-type="b", pch = 19, frame = FALSE,
-xlab="Number of clusters K",
-ylab="Total within-clusters sum of squares")
-#Optimal num of clusters- 12
-```
+id = inner_join(id, places)
+title = id %>% na.omit()
+df$id = as.numeric(df$id)
+df_cluster = left_join(title, df)
 
-```{r include=FALSE}
-library(stats)
-library(ggplot2)
-library(GGally)
-km.out=kmeans(places, 5,nstart=20)
-km.out$cluster
-km.out$size
-table(km.out$cluster)
-sum(km.out$cluster==1)
-places$clusters = factor(km.out$cluster)
+df_cluster$hclust = hclusters
+cluster1 = df_cluster %>% filter(hclust==1)
+cluster2 = df_cluster %>% filter(hclust==2)
+cluster3 = df_cluster %>% filter(hclust==3)
+cluster4 = df_cluster %>% filter(hclust==4)
+
 
 ```
-
-```{r include=FALSE}
-id = left_join(id, places)
-title = id %>% select(title, clusters) %>% na.omit()
-class(title$clusters)
-cluster1 = title %>% filter(clusters==1)
-cluster2 = title %>% filter(clusters==2)
-cluster3 = title %>% filter(clusters==3)
-cluster4 = title %>% filter(clusters==4)
-cluster5 = title %>% filter(clusters==5)
-```
-
-
 
 
 6. Downloading subway data
@@ -317,6 +176,77 @@ library(readxl)
 
 subway <- read_excel("~/3rd course/2 term/project/Subway.xlsx")
 ```
+
+6.1. Recommendation system
+```{r}
+#Filters to choose cluster number
+free='yes'
+duration=15
+
+if (free=='yes' & duration==15) {
+  df_shiny= cluster1
+}
+
+if (duration=120) {
+  df_shiny= cluster2
+}
+
+if (free=='no' & duration=15) {
+  df_shiny= cluster3
+}
+
+if (free=='yes' & duration=60) {
+  df_shiny= cluster4
+}
+
+#Category
+if (category=="Sights & Landmarks" {
+    df_shiny= df_shiny[df_shiny$category="Sights & Landmarks"]
+} else if (category=="Museums & Libraries") {
+    df_shiny= df_shiny[df_shiny$category="Museums & Libraries"]
+} else if (category=="Concerts & Shows") {
+    df_shiny= df_shiny[df_shiny$category="Concerts & Shows"]
+} else if (category=="Nature & Parks") {
+    df_shiny= df_shiny[df_shiny$category="Nature & Parks"]
+} 
+
+#Type
+top='yes'
+
+if (type=="yes" {
+    df_shiny= df_shiny[df_shiny$must_visit=1]
+} else {
+  df_shiny= df_shiny[df_shiny$must_visit=0]}
+
+#Wday and time
+wday= "Sunday"
+time=12  
+
+if (wday=="Monday"  {
+    df_shiny= df_shiny[time>df_shiny$open0 and time<df_shiny$close0]
+} else if (wday=="Tuesday") {
+    df_shiny= df_shiny[time>df_shiny$open1 and time<df_shiny$close1]
+} else if (wday=="Wednesday") {
+    df_shiny= df_shiny[time>df_shiny$open2 and time<df_shiny$close2]
+} else if (wday=="Thursday") {
+    df_shiny= df_shiny[time>df_shiny$open3 and time<df_shiny$close3]
+} else if (wday=="Friday") {
+    df_shiny= df_shiny[time>df_shiny$open4 and time<df_shiny$close4]
+} else if (wday=="Saturday ") {
+    df_shiny= df_shiny[time>df_shiny$open5 and time<df_shiny$close5]
+} else if (wday=="Sunday ") {
+    df_shiny= df_shiny[time>df_shiny$open6 and time<df_shiny$close6]
+    
+
+#Subway
+close="yes"
+subway="Parnas"
+
+
+```
+
+
+
 
 7. Maps plotting using leaflet plugin in OpenStreetMap
 
