@@ -287,5 +287,25 @@ Subway$y1 = as.numeric(Subway$y1)
 xy = cbind(c(yelp_flat24$lat), c(yelp_flat24$lng))
 m = cbind(c(Subway$x1),c(Subway$y1))
 distm(x = xy, y = m)
+m1 = as.data.frame(m)
+xy1 = as.data.frame(xy)
+dis = distm(x = xy, y = m)
+dis2 = as.data.frame(dis)
+colnames(dis2) = Subway$`Subway station`
+#фильтрация
+dis3 = as.matrix(dis2)
+dis3[dis3 >=2000] <- NA
+dis4 = as.data.frame(dis3)
+dis4$cites = yelp_flat24$title
+jopa322 <- function() {
+a <- readline(prompt="ВВедите станцию метро: ")
+dis5 = select(dis4, c(a, "cites"))
+dis5 = na.omit(dis5)
+b = length(dis5$cites)
+if (b == 0) {
+print("Достопримечательностей нет, соррямба")
+} else dis5$cites
+}
+jopa322() 
 
 ```
