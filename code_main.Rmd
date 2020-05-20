@@ -276,6 +276,8 @@ cat("Place name: ", random$title, "Adress: ", random$address, "Category: ", rand
 ```
 9. Distance between landmarks and subway stations
 
+#сделат ьслайдер для кол-ва достопримечательностей
+
 ```{r}
 library(geosphere)
 library(readxl)
