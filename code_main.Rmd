@@ -279,13 +279,13 @@ cat("Place name: ", random$title, "Adress: ", random$address, "Category: ", rand
 ```{r}
 library(geosphere)
 library(readxl)
-yelp_flat24 <- read_excel("yelp_flat24.xlsx")
+
 Subway <- read_excel("Subway.xlsx")
 
 Subway$x1 = as.numeric(Subway$x1)
 Subway$y1 = as.numeric(Subway$y1)
 
-xy = cbind(c(yelp_flat24$lat), c(yelp_flat24$lng))
+xy = cbind(c(df$lat), c(df$lng))
 m = cbind(c(Subway$x1),c(Subway$y1))
 distm(x = xy, y = m)
 m1 = as.data.frame(m)
