@@ -308,13 +308,13 @@ cat("Place name: ", random$title, "Adress: ", random$address, "Category: ", rand
 ```{r}
 library(geosphere)
 library(readxl)
-
-Subway <- read_excel("Subway.xlsx")
-
+library(leaflet)
+yelp_flat24 <- read_excel("yelp_flat24 (1).xlsx")
+yelp_flat24 = distinct(yelp_flat24, title, .keep_all = TRUE)
+Subway <- read_excel("Subway (1).xlsx")
 Subway$x1 = as.numeric(Subway$x1)
 Subway$y1 = as.numeric(Subway$y1)
-
-xy = cbind(c(df$lat), c(df$lng))
+xy = cbind(c(yelp_flat24$lat), c(yelp_flat24$lng))
 m = cbind(c(Subway$x1),c(Subway$y1))
 distm(x = xy, y = m)
 m1 = as.data.frame(m)
@@ -327,15 +327,45 @@ dis3 = as.matrix(dis2)
 dis3[dis3 >=2000] <- NA
 dis4 = as.data.frame(dis3)
 dis4$cites = yelp_flat24$title
-jopa322 <- function() {
+dis4 = arrange_all(dis4)
+citesearch <- function() {
 a <- readline(prompt="ВВедите станцию метро: ")
 dis5 = select(dis4, c(a, "cites"))
 dis5 = na.omit(dis5)
 b = length(dis5$cites)
 if (b == 0) {
 print("Достопримечательностей нет, соррямба")
-} else dis5$cites
+} else {if (b<=10) {
+dis5$cites
+} else {
+dis5 = dis5[1:10,]
+dis5$cites
 }
-jopa322() 
-
+}
+write.csv(dis5, file = "jopa322")
+dis5$cites
+colnames(Subway) = c("station", "lat", "lng", "Location")
+subcord = filter(Subway, station == a)
+subcord = select(subcord, 1:3)
+colnames(subcord) = c("title", "lat", "lng")
+jopa322 = read.csv("~/jopa322")
+jopa322 = jopa322$cites
+yelp_flat24$cord = yelp_flat24$title %in% jopa322
+yelp_flat24 = filter(yelp_flat24, cord == TRUE)
+yelp_flat24 = select(yelp_flat24, title, lat, lng)
+full = rbind(subcord, yelp_flat24)
+leaflet(full) %>% addTiles() %>%
+addMarkers(~lng[-1], ~lat[-1], popup = ~title[-1]) %>%
+addMarkers(~lng[1], ~lat[1], label = ~title[1],
+labelOptions = labelOptions(noHide = T, direction = "bottom",
+style = list(
+"color" = "black",
+"font-family" = "serif",
+"font-style" = "bold",
+"box-shadow" = "3px 3px rgba(0,0,0,0.25)",
+"font-size" = "12px",
+"border-color" = "rgba(0,0,0,0.5)"))) %>%
+addMeasure()
+}
+citesearch()
 ```
