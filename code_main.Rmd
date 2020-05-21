@@ -306,12 +306,16 @@ cat("Place name: ", random$title, "Adress: ", random$address, "Category: ", rand
 #сделат ьслайдер для кол-ва достопримечательностей
 
 ```{r}
+#Special icon for metro 
+icon_metro<- makeAwesomeIcon(icon= 'home', markerColor = 'orange', iconColor = 'black')
+```
+
+
+```{r}
 library(geosphere)
 library(readxl)
 library(leaflet)
-yelp_flat24 <- read_excel("yelp_flat24 (1).xlsx")
-yelp_flat24 = distinct(yelp_flat24, title, .keep_all = TRUE)
-Subway <- read_excel("Subway (1).xlsx")
+yelp_flat24 <- df
 Subway$x1 = as.numeric(Subway$x1)
 Subway$y1 = as.numeric(Subway$y1)
 xy = cbind(c(yelp_flat24$lat), c(yelp_flat24$lng))
@@ -322,14 +326,18 @@ xy1 = as.data.frame(xy)
 dis = distm(x = xy, y = m)
 dis2 = as.data.frame(dis)
 colnames(dis2) = Subway$`Subway station`
-#фильтрация
+
+
+#Filter
 dis3 = as.matrix(dis2)
 dis3[dis3 >=2000] <- NA
 dis4 = as.data.frame(dis3)
 dis4$cites = yelp_flat24$title
 dis4 = arrange_all(dis4)
-citesearch <- function() {
-a <- readline(prompt="ВВедите станцию метро: ")
+a='Spasskaya'
+
+#Function
+citesearch <- function(a) {
 dis5 = select(dis4, c(a, "cites"))
 dis5 = na.omit(dis5)
 b = length(dis5$cites)
@@ -356,7 +364,7 @@ yelp_flat24 = select(yelp_flat24, title, lat, lng)
 full = rbind(subcord, yelp_flat24)
 leaflet(full) %>% addTiles() %>%
 addMarkers(~lng[-1], ~lat[-1], popup = ~title[-1]) %>%
-addMarkers(~lng[1], ~lat[1], label = ~title[1],
+addAwesomeMarkers(~lng[1], ~lat[1], label = ~title[1],icon = icon_metro,
 labelOptions = labelOptions(noHide = T, direction = "bottom",
 style = list(
 "color" = "black",
@@ -367,5 +375,4 @@ style = list(
 "border-color" = "rgba(0,0,0,0.5)"))) %>%
 addMeasure()
 }
-citesearch()
-```
+citesearch(a)
