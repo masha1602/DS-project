@@ -178,7 +178,9 @@ library(readxl)
 subway <- read_excel("~/3rd course/2 term/project/Subway.xlsx")
 ```
 
+
 6.1. Recommendation system
+```{r}
 #Filters to choose cluster number
 free='yes'
 duration=15
@@ -187,17 +189,26 @@ if (free=='yes' & duration==15) {
   df_shiny= cluster1
 }
 
-if (duration==120) {
-  df_shiny= cluster2
+if (free=='no' & duration==15) {
+  df_shiny= rbind(cluster1, cluster3)
 }
 
-if (free=='no' & duration==15) {
-  df_shiny= cluster3
+if (duration==120 & free=='no') {
+  df_shiny= df
+}
+
+if (duration==120 & free=='yes') {
+  df_shiny= rbind(cluster1, cluster4)
+}
+
+if (free=='no' & duration==60) {
+  do.call("rbind", list(cluster1, cluster3, cluster4))
 }
 
 if (free=='yes' & duration==60) {
-  df_shiny= cluster4
+  df_shiny= rbind(cluster1, cluster4)
 }
+
 
 #Category
 category="Sights & Landmarks"
